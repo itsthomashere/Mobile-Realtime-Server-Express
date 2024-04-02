@@ -1,30 +1,28 @@
-#Goals of this projects
-[] Implement all User-Authentication
+# Goals of this projects
+- [] Register
 
-[] Register
+- [] Login
 
-[] Login
+- [] Change Password
 
-[] Change Password
+- [] OTP Authentication
 
-[] OTP Authentication
+- [] Logging System
 
-[] Logging System
+- [] Error Loggin
 
-[] Error Loggin
+- [] User Logging: How frequently a user use the service
 
-[] User Logging: How frequently a user use the service
+- [] Realtime 1-1 Messaging Using Websocket
 
-[] Realtime 1-1 Messaging Using Websocket
+- [] Realtime group message using Websocket
 
-[] Realtime group message using Websocket
+- [] Video streaming (not realtime-streaming)
 
-[] Video streaming (not realtime-streaming)
-
-[] Anti-DDOS
+- [] Anti-DDOS
 
 
-#How to run this projects
+# How to run this projects
 (Required) Installing typescript compiler globaly 
 
 Setup .env file with MYSQL_DATABASE_USER,MYSQL_DATABASE_PASSWORD,MYSQL_DATABASE_HOST
