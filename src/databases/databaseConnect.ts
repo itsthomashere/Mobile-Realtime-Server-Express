@@ -9,6 +9,7 @@ async function dbConnect(): Promise<Connection> {
     port: 3306,
   };
   const db = mysql.createConnection(connectionOptions);
+  console.log("Connected to database");
   return db;
 }
 

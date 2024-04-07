@@ -62,4 +62,5 @@ async function createUser(db: Connection, req: Request, res: Response) {
       .json({ message: "Something wrong happened when creating user" });
   }
 }
+
 export { getAllUser, createUser };
