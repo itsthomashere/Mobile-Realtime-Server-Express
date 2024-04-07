@@ -1,23 +1,15 @@
-import * as database from "mysql2";
+import mysql, { Connection, ConnectionOptions } from "mysql2/promise";
 
-function dbConnect(): void {
-  const mysql = database.createConnection({
-    host: process.env.MYSQL_DATABASE_HOST,
+async function dbConnect(): Promise<Connection> {
+  const connectionOptions: ConnectionOptions = {
     user: process.env.MYSQL_DATABASE_USER,
+    host: process.env.MYSQL_DATABASE_HOST,
     password: process.env.MYSQL_DATABASE_PASSWORD,
-    port: 3005,
-    database: "Chat_App",
-  });
-  mysql.connect((err) => {
-    if (err) {
-      console.log(err);
-      throw err;
-    } else {
-      console.log(
-        `Connected to MySQL with user ${process.env.MYSQL_DATABASE_USER} on ${process.env.MYSQL_DATABASE_HOST}`,
-      );
-    }
-  });
+    database: "ChatApp_DB",
+    port: 3306,
+  };
+  const db = mysql.createConnection(connectionOptions);
+  return db;
 }
 
 export default dbConnect;
