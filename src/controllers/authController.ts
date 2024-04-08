@@ -47,49 +47,47 @@ async function registerOtpRequest(db: Connection, req: Request, res: Response) {
 }
 
 async function verifyRegister(db: Connection, req: Request, res: Response) {
-  const { email, username, password, fistname, lastname, phone, otp } =
+  const { email, username, password, firstname, lastname, phone, otp } =
     req.body;
-  let result;
   try {
     const [results] = await db.query<RowDataPacket[]>(
-      "SELECT * FROM user_otp WHERE email=? AND otp=? ORDER BY created_at DESC",
+      "SELECT * FROM user_otp WHERE email=? AND otp=? ORDER BY u_otp_id DESC",
       [email, otp],
     );
     if (results.length == 0) {
       return res.status(400).json({ message: "OTP not found" });
     }
-    result = results[0];
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ message: "Internal server error" });
+    return res.status(500).json({ message: "Error Code 2" });
   }
-  const is_admin = 0;
-  const is_active = 0;
-  const otp_pending = 0;
-  const hashedJson = await hassingPassword(password);
-  if (otp == result) {
-    try {
-      const [results] = await db.query<ResultSetHeader>(
-        "INSERT INTO user(email, username, password, salt, is_admin, is_active, otp_pending, firstname, lastname, phone) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        [
-          email,
-          username,
-          hashedJson.hashedPwd,
-          hashedJson.salt,
-          is_admin,
-          is_active,
-          otp_pending,
-          fistname,
-          lastname,
-          phone,
-        ],
-      );
-      if (results.affectedRows > 0) {
-        return res.status(200).json({ message: "User created" });
-      }
-    } catch (error) {
-      return res.status(500).json({ message: "Internal server error" });
+  const hashedPassword = await hassingPassword(password);
+  try {
+    const [results] = await db.query<ResultSetHeader>(
+      "INSERT INTO user (email , username, password, phone , firstname, lastname, is_active, is_admin, otp_pending, salt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      [
+        email,
+        username,
+        hashedPassword.hashedPwd,
+        phone,
+        firstname,
+        lastname,
+        0,
+        0,
+        0,
+        hashedPassword.salt,
+      ],
+    );
+    if (results.affectedRows > 0) {
+      return res.status(201).json({ message: "User created successfully" });
+    } else {
+      return res.status(500).json({ message: "Something wrong happened" });
     }
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ message: "Something wrong happened when creating user" });
   }
 }
 export { loginUser, registerOtpRequest, verifyRegister };
