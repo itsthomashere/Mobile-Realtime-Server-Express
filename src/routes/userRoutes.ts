@@ -1,6 +1,10 @@
 import express, { Request, Response } from "express";
 import { createUser, getAllUser } from "../controllers/userController";
 import { Connection } from "mysql2/promise";
+import {
+  registerOtpRequest,
+  verifyRegister,
+} from "../controllers/authController";
 const router = express.Router();
 
 class UserRoute {
@@ -14,6 +18,15 @@ class UserRoute {
   createUser = router.post("/user", (req: Request, res: Response) => {
     createUser(this.db, (req = req), (res = res));
   });
+  registerRequest = router.post("/register", (req: Request, res: Response) => {
+    registerOtpRequest(this.db, req, res);
+  });
+  registerVerify = router.post(
+    "/register/verify",
+    (req: Request, res: Response) => {
+      verifyRegister(this.db, req, res);
+    },
+  );
 }
 
 export { UserRoute };
