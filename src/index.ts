@@ -2,8 +2,6 @@ require("dotenv").config();
 import express, { Express } from "express";
 import { UserRoute } from "./routes/userRoutes";
 import dbConnect from "./databases/databaseConnect";
-import { hassingPassword } from "./utils/passwordCrypt";
-import { mainSender } from "./utils/mailingServices";
 const app: Express = express();
 const PORT = process.env.PORT || 3500;
 

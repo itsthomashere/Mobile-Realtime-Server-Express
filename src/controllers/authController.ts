@@ -20,7 +20,9 @@ async function registerOtpRequest(db: Connection, req: Request, res: Response) {
     }
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ message: "Internal server error" });
+    return res
+      .status(500)
+      .json({ message: "Something wrong when indexing known email" });
   }
 
   const otp = Math.floor(100000 + Math.random() * 900000);
@@ -50,17 +52,30 @@ async function verifyRegister(db: Connection, req: Request, res: Response) {
   const { email, username, password, firstname, lastname, phone, otp } =
     req.body;
   try {
+    // try query the results to check if the otp exists on the table
     const [results] = await db.query<RowDataPacket[]>(
       "SELECT * FROM user_otp WHERE email=? AND otp=? ORDER BY u_otp_id DESC",
       [email, otp],
     );
-    if (results.length == 0) {
-      return res.status(400).json({ message: "OTP not found" });
+    // check if the the otp is invalid
+    if (results.length == 0 || results[0].otp != otp) {
+      return res.status(400).json({ message: "OTP not found or invalid" });
+    }
+    //check if the otp is expired
+    const time_diff =
+      (new Date().getTime() - results[0].created_at) / 1000 / 60;
+    if (time_diff > 10) {
+      await db.query<ResultSetHeader>(
+        "DELETE FROM user_otp WHERE email=? AND otp=?",
+        [email, otp],
+      );
+      return res.status(400).json({ message: "OTP expired" });
     }
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Error Code 2" });
   }
+  //hashsing password and create user, save the salt to the user table
   const hashedPassword = await hassingPassword(password);
   try {
     const [results] = await db.query<ResultSetHeader>(
@@ -90,4 +105,5 @@ async function verifyRegister(db: Connection, req: Request, res: Response) {
       .json({ message: "Something wrong happened when creating user" });
   }
 }
+
 export { loginUser, registerOtpRequest, verifyRegister };
