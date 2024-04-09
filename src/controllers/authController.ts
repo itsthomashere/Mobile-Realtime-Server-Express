@@ -1,10 +1,70 @@
+require("dotenv").config();
 import { Request, Response } from "express";
 import { Connection, RowDataPacket, ResultSetHeader } from "mysql2/promise";
 import { mainSender } from "../utils/mailingServices";
-import { hassingPassword } from "../utils/passwordCrypt";
-
+import {
+  hassingPassword,
+  checkingHashedPassword,
+} from "../utils/passwordCrypt";
+import * as jwt from "jsonwebtoken";
 async function loginUser(db: Connection, req: Request, res: Response) {
   const { email, password } = req.body;
+  try {
+    const [results] = await db.query<RowDataPacket[]>(
+      "SELECT * from user where user.email=?",
+      [email],
+    );
+    if (results.length == 0) {
+      return res.status(400).json({ message: "User not found" });
+    }
+    if (
+      !(await checkingHashedPassword(
+        password,
+        results[0].salt,
+        results[0].password,
+      ))
+    ) {
+      return res.status(400).json({ message: "Wrong password" });
+    }
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ message: "Error while getting user", error: error });
+  }
+  const accessToken = jwt.sign(
+    {
+      UserInfo: {
+        email: email,
+      },
+    },
+    String(process.env.ACCESS_TOKEN_SECRET),
+    { expiresIn: "5m" },
+  );
+  const refeshToken = jwt.sign(
+    {
+      UserInfo: {
+        email: email,
+        password: password,
+      },
+    },
+    String(process.env.ACCESS_TOKEN_SECRET),
+    { expiresIn: "3d" },
+  );
+  try {
+    const [results] = await db.query<ResultSetHeader>(
+      "UPDATE user SET refesh_token = ? WHERE email = ?",
+      [refeshToken, email],
+    );
+    if (results.affectedRows > 0) {
+      return res.status(200).json({ message: "Login success", accessToken });
+    }
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ message: "Login failed due to server problem" });
+  }
 }
 
 async function registerOtpRequest(db: Connection, req: Request, res: Response) {

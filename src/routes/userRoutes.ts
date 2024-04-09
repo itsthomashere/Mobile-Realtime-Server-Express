@@ -2,6 +2,7 @@ import express, { Request, Response } from "express";
 import { createUser, getAllUser } from "../controllers/userController";
 import { Connection } from "mysql2/promise";
 import {
+  loginUser,
   registerOtpRequest,
   verifyRegister,
 } from "../controllers/authController";
@@ -29,4 +30,14 @@ class UserRoute {
   );
 }
 
-export { UserRoute };
+class AuthRoute {
+  db: Connection;
+  constructor(db: Connection) {
+    this.db = db;
+  }
+  login = router.post("/login", (req: Request, res: Response) => {
+    loginUser(this.db, req, res);
+  });
+}
+
+export { AuthRoute, UserRoute };

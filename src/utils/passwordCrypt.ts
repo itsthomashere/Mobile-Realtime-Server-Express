@@ -10,5 +10,19 @@ async function hassingPassword(password: string) {
     hashedPwd: hashedPwd,
   };
 }
+async function checkingHashedPassword(
+  password: string,
+  salt: string,
+  hashedPwd: string,
+) {
+  const newHashedPwd = crypto
+    .pbkdf2Sync(password, salt, 1000, 64, "sha512")
+    .toString("hex");
+  if (newHashedPwd == hashedPwd) {
+    return true;
+  } else {
+    return false;
+  }
+}
 
-export { hassingPassword };
+export { hassingPassword, checkingHashedPassword };

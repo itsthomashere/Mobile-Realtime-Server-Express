@@ -1,6 +1,6 @@
 require("dotenv").config();
 import express, { Express } from "express";
-import { UserRoute } from "./routes/userRoutes";
+import { AuthRoute, UserRoute } from "./routes/userRoutes";
 import dbConnect from "./databases/databaseConnect";
 const app: Express = express();
 const PORT = process.env.PORT || 3500;
@@ -10,10 +10,12 @@ const db = dbConnect();
 
 const newDb = Promise.resolve(db).then((db) => {
   const userRoute = new UserRoute(db);
+  const authRoute = new AuthRoute(db);
   app.use("/", userRoute.getAllUser);
   app.use("/", userRoute.createUser);
   app.use("/", userRoute.registerRequest);
   app.use("/", userRoute.registerVerify);
+  app.use("/", authRoute.login);
 });
 
 newDb;

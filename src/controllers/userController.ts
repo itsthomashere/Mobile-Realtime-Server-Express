@@ -3,8 +3,10 @@ import { Connection, ResultSetHeader, RowDataPacket } from "mysql2/promise";
 
 async function getAllUser(db: Connection, req: Request, res: Response) {
   try {
-    const [results] = await db.query("SELECT * FROM user");
-    console.log(results);
+    const [results] = await db.query<RowDataPacket[]>("SELECT * FROM user");
+    if (results.length == 0) {
+      return res.status(404).json({ message: "No user found" });
+    }
     return res.status(200).json(results);
   } catch (error) {
     console.log(error);
