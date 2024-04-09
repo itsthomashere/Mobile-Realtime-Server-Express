@@ -38,23 +38,23 @@ async function loginUser(db: Connection, req: Request, res: Response) {
         email: email,
       },
     },
-    String(process.env.ACCESS_TOKEN_SECRET),
+    process.env.ACCESS_TOKEN_SECRET as string,
     { expiresIn: "5m" },
   );
-  const refeshToken = jwt.sign(
+  const refreshToken = jwt.sign(
     {
       UserInfo: {
         email: email,
         password: password,
       },
     },
-    String(process.env.ACCESS_TOKEN_SECRET),
+    process.env.ACCESS_TOKEN_SECRET as string,
     { expiresIn: "3d" },
   );
   try {
     const [results] = await db.query<ResultSetHeader>(
-      "UPDATE user SET refesh_token = ? WHERE email = ?",
-      [refeshToken, email],
+      "UPDATE user SET refresh_token = ? WHERE email = ?",
+      [refreshToken, email],
     );
     if (results.affectedRows > 0) {
       return res.status(200).json({ message: "Login success", accessToken });

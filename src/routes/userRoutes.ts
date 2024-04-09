@@ -6,6 +6,7 @@ import {
   registerOtpRequest,
   verifyRegister,
 } from "../controllers/authController";
+import { verifyJWT } from "../middleware/verifyJWT";
 const router = express.Router();
 
 class UserRoute {
@@ -13,9 +14,13 @@ class UserRoute {
   constructor(db: Connection) {
     this.db = db;
   }
-  getAllUser = router.get("/user/all", (req: Request, res: Response) => {
-    getAllUser(this.db, req, res);
-  });
+  getAllUser = router.get(
+    "/user/all",
+    verifyJWT,
+    (req: Request, res: Response) => {
+      getAllUser(this.db, req, res);
+    },
+  );
   createUser = router.post("/user", (req: Request, res: Response) => {
     createUser(this.db, (req = req), (res = res));
   });
