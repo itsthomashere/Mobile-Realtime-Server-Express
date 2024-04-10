@@ -7,6 +7,7 @@ import {
   verifyRegister,
 } from "../controllers/authController";
 import { verifyJWT } from "../middleware/verifyJWT";
+import { requireAdmin } from "../middleware/requireAdmin";
 const router = express.Router();
 
 class UserRoute {

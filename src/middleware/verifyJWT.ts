@@ -17,9 +17,9 @@ function verifyJWT(req: Request, res: Response, next: NextFunction) {
           return res.status(403).json({ message: "Token expired", error: err });
         }
         req.body.email = (decoded as any).UserInfo.email;
+        next();
       },
     );
-    next;
   } catch (error) {
     console.log(error);
     return res.status(403).json({ message: "Could not verify token" });
