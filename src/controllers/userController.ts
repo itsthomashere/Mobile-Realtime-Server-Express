@@ -1,81 +1,60 @@
 import { Request, Response } from "express";
 import { Connection, ResultSetHeader, RowDataPacket } from "mysql2/promise";
 
-async function getAllUser(db: Connection, req: Request, res: Response) {
+async function getInformation(db: Connection, req: Request, res: Response) {
   const { email } = req.body;
   try {
     const [results] = await db.query<RowDataPacket[]>(
-      "SELECT * from user where user.email=? and user.is_admin is true",
+      "SELECT * from user where user.email =?",
       [email],
     );
     if (results.length == 0) {
-      return res.status(404).json({ message: "You are not admin" });
+      return res.status(404).json({ message: "Could not find user" });
     }
+    const data = results[0];
+    return res.status(200).json({
+      data: data,
+    });
   } catch (error) {
     console.log(error);
-    return res.status(403).json({ message: "Can not verify your identity" });
-  }
-  try {
-    const [results] = await db.query<RowDataPacket[]>("SELECT * FROM user");
-    if (results.length == 0) {
-      return res.status(404).json({ message: "No user found" });
-    }
-    return res.status(200).json(results);
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({ message: "Internal server error" });
+    return res.status(403).json({
+      message: "An error occurred while fetching user information",
+      error: error,
+    });
   }
 }
 
-async function createUser(db: Connection, req: Request, res: Response) {
-  const { email, username, password, firstname, lastname, phone } = req.body;
-  if (!email || !username || !password) {
-    return res.status(400).json({ message: "Missing required fields" });
-  }
-
+async function updateInformation(db: Connection, req: Request, res: Response) {
+  const { email, password, username, firstname, lastname, phone, birthday } =
+    req.body;
   try {
     const [results] = await db.query<RowDataPacket[]>(
-      "SELECT * from user where user.email=?",
-      [email],
+      "SELECT * from user where user.email =?",
     );
-    if (results.length > 0) {
-      console.log(results);
-      return res.status(400).json({ message: "Email already exists" });
+    if (results.length == 0) {
+      return res.status(404).json({ message: "Could not find user" });
     }
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ message: "Internal server error" });
+    return res.status(403).json({
+      message: "An error occurred while fetching user information",
+      error: error,
+    });
   }
-
-  const is_active = 0;
-  const is_admin = 0;
-  const otp_pending = 0;
   try {
     const [results] = await db.query<ResultSetHeader>(
-      "INSERT INTO user (email , username, password, phone , firstname, lastname, is_active, is_admin, otp_pending) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-      [
-        email,
-        username,
-        password,
-        phone,
-        firstname,
-        lastname,
-        is_active,
-        is_admin,
-        otp_pending,
-      ],
+      "UPDATE user SET password = ?, username = ?, firstname = ?, lastname = ?, phone = ?, birthday = ? WHERE email = ?",
+      [password, username, firstname, lastname, phone, birthday, email],
     );
-    if (results.affectedRows > 0) {
-      return res.status(201).json({ message: "User created successfully" });
-    } else {
-      return res.status(500).json({ message: "Something wrong happened" });
+    if (results.affectedRows == 0 || results.affectedRows == null) {
+      return res.status(404).json({ message: "Could not update user" });
     }
   } catch (error) {
     console.log(error);
     return res
-      .status(500)
-      .json({ message: "Something wrong happened when creating user" });
+      .status(404)
+      .json({ message: "Database query error", error: error });
   }
+  return res.status(200).json({ message: "User updated successfully" });
 }
-
-export { getAllUser, createUser };
+export { getInformation, updateInformation };

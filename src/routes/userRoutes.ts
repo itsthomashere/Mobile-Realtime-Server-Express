@@ -1,5 +1,8 @@
 import express, { Request, Response } from "express";
-import { createUser, getAllUser } from "../controllers/userController";
+import {
+  getInformation,
+  updateInformation,
+} from "../controllers/userController";
 import { Connection } from "mysql2/promise";
 import {
   loginUser,
@@ -7,7 +10,11 @@ import {
   verifyRegister,
 } from "../controllers/authController";
 import { verifyJWT } from "../middleware/verifyJWT";
-import { requireAdmin } from "../middleware/requireAdmin";
+import {
+  deleteUser,
+  getAllUser,
+  makeUserAdmin,
+} from "../controllers/adminController";
 const router = express.Router();
 
 class UserRoute {
@@ -15,16 +22,6 @@ class UserRoute {
   constructor(db: Connection) {
     this.db = db;
   }
-  getAllUser = router.get(
-    "/user/all",
-    verifyJWT,
-    (req: Request, res: Response) => {
-      getAllUser(this.db, req, res);
-    },
-  );
-  createUser = router.post("/user", (req: Request, res: Response) => {
-    createUser(this.db, (req = req), (res = res));
-  });
   registerRequest = router.post("/register", (req: Request, res: Response) => {
     registerOtpRequest(this.db, req, res);
   });
@@ -32,6 +29,20 @@ class UserRoute {
     "/register/verify",
     (req: Request, res: Response) => {
       verifyRegister(this.db, req, res);
+    },
+  );
+  getInformation = router.get(
+    "/user/info",
+    verifyJWT,
+    (req: Request, res: Response) => {
+      getInformation(this.db, req, res);
+    },
+  );
+  updateInformation = router.put(
+    "/user/update",
+    verifyJWT,
+    (req: Request, res: Response) => {
+      updateInformation(this.db, req, res);
     },
   );
 }
@@ -45,5 +56,32 @@ class AuthRoute {
     loginUser(this.db, req, res);
   });
 }
+class AdminRoute {
+  db: Connection;
+  constructor(db: Connection) {
+    this.db = db;
+  }
+  getAllUser = router.get(
+    "/admin/user/all",
+    verifyJWT,
+    (req: Request, res: Response) => {
+      getAllUser(this.db, req, res);
+    },
+  );
+  makeAdmin = router.post(
+    "/admin/make",
+    verifyJWT,
+    (req: Request, res: Response) => {
+      makeUserAdmin(this.db, req, res);
+    },
+  );
+  deleteUser = router.delete(
+    "/admin/delete/:email",
+    verifyJWT,
+    (req: Request, res: Response) => {
+      deleteUser(this.db, req, res);
+    },
+  );
+}
 
-export { AuthRoute, UserRoute };
+export { AuthRoute, UserRoute, AdminRoute };
