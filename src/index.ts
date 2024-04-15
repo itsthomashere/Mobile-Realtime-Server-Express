@@ -2,6 +2,7 @@ require("dotenv").config();
 import express, { Express } from "express";
 import { AuthRoute, UserRoute, AdminRoute } from "./routes/userRoutes";
 import dbConnect from "./databases/databaseConnect";
+import { websocketProvider } from "./utils/websocketProvider";
 const app: Express = express();
 const PORT = process.env.PORT || 3500;
 
@@ -20,6 +21,7 @@ const newDb = Promise.resolve(db).then((db) => {
   app.use("/", adminRoute.getAllUser);
   app.use("/", adminRoute.makeAdmin);
   app.use("/", adminRoute.deleteUser);
+  const webSockerProvider = new websocketProvider(db);
 });
 
 newDb;

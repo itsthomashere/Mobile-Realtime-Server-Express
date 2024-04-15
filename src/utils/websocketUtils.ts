@@ -48,9 +48,10 @@ async function receiveMessage(ws: WebSocket, db: Connection, message: RawData) {
     if (results.affectedRows == 0) {
       return;
     }
+    return data;
   } catch (error) {
     throw error;
   }
 }
 
-export { connectUser };
+export { connectUser, receiveMessage };
